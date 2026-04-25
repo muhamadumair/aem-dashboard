@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { DashboardService } from '../services/dashboard.service';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
+import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-dashboard',
@@ -32,7 +34,11 @@ export class DashboardComponent implements OnInit {
     plugins: { legend: { position: 'bottom' } }
   };
 
-  constructor(private dashboardService: DashboardService) { }
+  constructor(
+    private dashboardService: DashboardService,
+    private authService: AuthService, 
+    private router: Router            
+  ) { }
 
   ngOnInit(): void {
     this.dashboardService.getDashboardData().subscribe({
@@ -40,7 +46,10 @@ export class DashboardComponent implements OnInit {
         this.userData = data.tableUsers;
         this.setupCharts(data);
       },
-      error: (err) => console.error('Error fetching dashboard data', err)
+      error: (err) => {
+        console.error('Error fetching data', err);
+        if (err.status === 401) { this.logout(); }
+      }
     });
   }
 
@@ -63,6 +72,11 @@ export class DashboardComponent implements OnInit {
         borderWidth: 0
       }]
     };
+  }
+
+  logout(): void {
+    this.authService.logout();     
+    this.router.navigate(['/login']); 
   }
 
 }
