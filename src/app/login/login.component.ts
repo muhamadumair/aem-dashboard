@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -9,8 +11,13 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   isSubmitted = false;
+  errorMessage = '';
 
-  constructor(private fb: FormBuilder) { }
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -23,11 +30,23 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     this.isSubmitted = true;
+    this.errorMessage = '';
 
     if (this.loginForm.invalid) {
       return;
     }
 
-    console.log('Form is valid! Data:', this.loginForm.value);
+    this.authService.login(this.loginForm.value).subscribe({
+      next: (response) => {
+        console.log('Login successful', response);
+        const token = response.token || response; 
+        this.authService.saveToken(token);
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        console.error('Login failed', err);
+        this.errorMessage = 'Invalid email or password. Please try again.';
+      }
+    });
   }
 }
