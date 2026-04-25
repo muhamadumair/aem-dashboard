@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component } from '@angular/core';
+import { FormBuilder, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
+
 import { AuthService } from '../services/auth.service';
 
 @Component({
@@ -8,45 +10,31 @@ import { AuthService } from '../services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
 })
-export class LoginComponent implements OnInit {
-  loginForm!: FormGroup;
-  isSubmitted = false;
-  errorMessage = '';
+export class LoginComponent {
+  loginForm = this.fb.nonNullable.group({
+    username: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required]
+  });
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
-  ) { }
-
-  ngOnInit(): void {
-    this.loginForm = this.fb.group({
-      username: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
-    });
-  }
-
-  get f() { return this.loginForm.controls; }
+    private auth: AuthService,
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
 
   onSubmit(): void {
-    this.isSubmitted = true;
-    this.errorMessage = '';
-
     if (this.loginForm.invalid) {
+      this.toastr.warning('Please enter a valid email and password.');
       return;
     }
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: (response) => {
-        console.log('Login successful', response);
-        const token = response.token || response; 
-        this.authService.saveToken(token);
+    this.auth.login(this.loginForm.getRawValue()).subscribe({
+      next: (res) => {
+        this.auth.saveToken(res.token ?? res);
         this.router.navigate(['/dashboard']);
       },
-      error: (err) => {
-        console.error('Login failed', err);
-        this.errorMessage = 'Invalid email or password. Please try again.';
-      }
+      error: () => this.toastr.error('Invalid email or password.')
     });
   }
 }

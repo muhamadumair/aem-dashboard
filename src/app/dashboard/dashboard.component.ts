@@ -1,8 +1,20 @@
 import { Component, OnInit } from '@angular/core';
-import { DashboardService } from '../services/dashboard.service';
-import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
-import { AuthService } from '../services/auth.service';
 import { Router } from '@angular/router';
+import { ChartConfiguration, ChartData } from 'chart.js';
+import { ToastrService } from 'ngx-toastr';
+
+import { AuthService } from '../services/auth.service';
+import { DashboardService } from '../services/dashboard.service';
+
+interface ChartPoint { name: string; value: number; }
+interface User { firstName: string; lastName: string; username: string; }
+interface DashboardResponse {
+  chartBar: ChartPoint[];
+  chartDonut: ChartPoint[];
+  tableUsers: User[];
+}
+
+const GRAY_PALETTE = ['#9e9e9e', '#bdbdbd', '#757575', '#cfcfcf', '#616161', '#e0e0e0'];
 
 @Component({
   selector: 'app-dashboard',
@@ -10,13 +22,12 @@ import { Router } from '@angular/router';
   styleUrls: ['./dashboard.component.scss']
 })
 export class DashboardComponent implements OnInit {
-  userData: any[] = [];
+  users: User[] = [];
 
-  private readonly grayPalette = ['#9e9e9e', '#bdbdbd', '#757575', '#cfcfcf', '#616161', '#e0e0e0'];
+  barChartData: ChartData<'bar'> = { labels: [], datasets: [] };
+  donutChartData: ChartData<'doughnut'> = { labels: [], datasets: [] };
 
-  // Bar Chart Data
-  public barChartData: ChartData<'bar'> = { labels: [], datasets: [] };
-  public barChartOptions: ChartConfiguration<'bar'>['options'] = {
+  barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { display: false } },
@@ -26,57 +37,62 @@ export class DashboardComponent implements OnInit {
     }
   };
 
-  // Donut Chart Data
-  public donutChartData: ChartData<'doughnut'> = { labels: [], datasets: [] };
-  public donutChartOptions: ChartConfiguration<'doughnut'>['options'] = {
+  donutChartOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: { legend: { position: 'bottom' } }
   };
 
   constructor(
-    private dashboardService: DashboardService,
-    private authService: AuthService, 
-    private router: Router            
-  ) { }
+    private dashboard: DashboardService,
+    private auth: AuthService,
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
-    this.dashboardService.getDashboardData().subscribe({
-      next: (data) => {
-        this.userData = data.tableUsers;
-        this.setupCharts(data);
+    this.dashboard.getDashboardData().subscribe({
+      next: (data: DashboardResponse) => {
+        this.users = data.tableUsers;
+        this.barChartData = this.toBarChart(data.chartBar);
+        this.donutChartData = this.toDonutChart(data.chartDonut);
       },
       error: (err) => {
-        console.error('Error fetching data', err);
-        if (err.status === 401) { this.logout(); }
+        if (err.status === 401) {
+          this.toastr.error('Session expired. Please log in again.');
+          this.logout();
+          return;
+        }
+        this.toastr.error('Failed to load dashboard data.');
       }
     });
   }
 
-  setupCharts(data: any) {
-    this.barChartData = {
-      labels: data.chartBar.map((item: any) => item.name),
+  logout(): void {
+    this.auth.logout();
+    this.router.navigate(['/login']);
+  }
+
+  private toBarChart(points: ChartPoint[]): ChartData<'bar'> {
+    return {
+      labels: points.map(p => p.name),
       datasets: [{
-        data: data.chartBar.map((item: any) => item.value),
+        data: points.map(p => p.value),
         backgroundColor: '#9e9e9e',
         hoverBackgroundColor: '#757575',
         borderWidth: 0
       }]
     };
+  }
 
-    this.donutChartData = {
-      labels: data.chartDonut.map((item: any) => item.name),
+  private toDonutChart(points: ChartPoint[]): ChartData<'doughnut'> {
+    return {
+      labels: points.map(p => p.name),
       datasets: [{
-        data: data.chartDonut.map((item: any) => item.value),
-        backgroundColor: this.grayPalette,
+        data: points.map(p => p.value),
+        backgroundColor: GRAY_PALETTE,
         borderWidth: 0
       }]
     };
   }
-
-  logout(): void {
-    this.authService.logout();     
-    this.router.navigate(['/login']); 
-  }
-
 }
