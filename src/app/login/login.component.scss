@@ -1,0 +1,33 @@
+.login-page {
+    min-height: 100vh;
+    background-color: #fafafa;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    //padding-top: 140px;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 480px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+
+    .card-header {
+        border-bottom: 1px solid #dee2e6;
+        padding: 0.85rem 1rem;
+        font-weight: 500;
+    }
+
+    .form-control {
+        border-radius: 4px;
+    }
+
+    .btn-primary {
+        background-color: #1976d2;
+        border-color: #1976d2;
+        padding: 0.45rem 1.2rem;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+    }
+}
