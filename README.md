@@ -2,7 +2,7 @@
 
 A small Angular 14 dashboard application built as a technical assessment.
 It features a login flow, a protected dashboard with bar and doughnut charts,
-a users table, and an optional Electron desktop build.
+a users table, and an Electron desktop build.
 
 ## Tech stack
 
@@ -11,7 +11,7 @@ a users table, and an optional Electron desktop build.
 - **Charts:** Chart.js + ng2-charts
 - **Local storage / auth seed:** PouchDB (IndexedDB in the browser)
 - **Notifications:** ngx-toastr
-- **Desktop shell:** Electron (optional)
+- **Desktop shell:** Electron
 
 ## Requirements
 
