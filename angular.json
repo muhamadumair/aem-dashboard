@@ -23,6 +23,12 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "allowedCommonJsDependencies": [
+              "spark-md5",
+              "vuvuzela",
+              "pouchdb",
+              "pouchdb-find"
+            ],
             "assets": [
               "src/favicon.ico",
               "src/assets"

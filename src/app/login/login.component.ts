@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 
 import { AuthService } from '../services/auth.service';
+import { DatabaseService } from '../services/database.service';
 
 @Component({
   selector: 'app-login',
@@ -20,16 +21,26 @@ export class LoginComponent {
     private fb: FormBuilder,
     private auth: AuthService,
     private router: Router,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private dbService: DatabaseService
   ) {}
 
-  onSubmit(): void {
+  async onSubmit(): Promise<void> {
     if (this.loginForm.invalid) {
       this.toastr.warning('Please enter a valid email and password.');
       return;
     }
 
-    this.auth.login(this.loginForm.getRawValue()).subscribe({
+    const { username, password } = this.loginForm.getRawValue();
+
+    // check against local pouchdb first
+    const ok = await this.dbService.validateUser(username, password);
+    if (!ok) {
+      this.toastr.error('Invalid email or password.');
+      return;
+    }
+
+    this.auth.login({ username, password }).subscribe({
       next: (res) => {
         this.auth.saveToken(res.token ?? res);
         this.router.navigate(['/dashboard']);
