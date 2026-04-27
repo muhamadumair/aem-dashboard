@@ -1,27 +1,99 @@
-# AemDashboard
+# AEM Dashboard
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.13.
+A small Angular 14 dashboard application built as a technical assessment.
+It features a login flow, a protected dashboard with bar and doughnut charts,
+a users table, and an optional Electron desktop build.
 
-## Development server
+## Tech stack
 
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
+- **Framework:** Angular 14 (Angular CLI 14.2.13)
+- **UI:** Bootstrap 4
+- **Charts:** Chart.js + ng2-charts
+- **Local storage / auth seed:** PouchDB (IndexedDB in the browser)
+- **Notifications:** ngx-toastr
+- **Desktop shell:** Electron (optional)
 
-## Code scaffolding
+## Requirements
 
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
+- Node.js 16.x or 18.x (tested on 18)
+- npm 8 or newer
+- Git
 
-## Build
+No global install of the Angular CLI is required — the project uses its local copy.
 
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+## Getting started
 
-## Running unit tests
+```bash
+git clone https://github.com/<your-username>/aem-dashboard.git
+cd aem-dashboard
+npm install
+```
 
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
+## Run
 
-## Running end-to-end tests
+### Development server
 
-Run `ng e2e` to execute the end-to-end tests via a platform of your choice. To use this command, you need to first add a package that implements end-to-end testing capabilities.
+```bash
+npm start
+```
 
-## Further help
+Then open `http://localhost:4200/`. The app reloads on file changes.
 
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI Overview and Command Reference](https://angular.io/cli) page.
+### Production build
+
+```bash
+npm run build
+```
+
+Output is written to `dist/aem-dashboard`.
+
+### Desktop app (Electron)
+
+```bash
+npm run electron
+```
+
+This builds the Angular app and launches it inside Electron.
+
+## Test credentials
+
+The login page validates against a local PouchDB instance that is seeded on
+first run. Use:
+
+```
+Email:    user@aemenersol.com
+Password: Test@123
+```
+
+## Project structure
+
+```
+src/
+  app/
+    dashboard/        dashboard page (charts + users table)
+    login/            login page
+    guards/           route guards
+    interceptors/     http interceptors
+    services/         auth, dashboard data, local pouchdb
+  assets/
+  environments/
+main.js               Electron entry point
+```
+
+## Scripts
+
+| Command            | Description                          |
+| ------------------ | ------------------------------------ |
+| `npm start`        | Run the dev server on port 4200      |
+| `npm run build`    | Production build                     |
+| `npm run watch`    | Dev build with file watching         |
+| `npm test`         | Run unit tests via Karma             |
+| `npm run electron` | Build and launch the Electron app    |
+
+## Notes
+
+- The local user database is stored in the browser's IndexedDB under
+  `_pouch_aem_local_db`. You can inspect it via DevTools → Application →
+  IndexedDB.
+- `skipLibCheck` is enabled in `tsconfig.json` to stay compatible with the
+  TypeScript 4.7 toolchain used by Angular 14.
